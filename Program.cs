@@ -40,6 +40,7 @@ using (TextFieldParser parser = new TextFieldParser(path))
         tupleError = "";
 
         if (headerRow == true)
+            rowsToKeep.Add(currentRow);
             headerRow = false;
         else
         {
