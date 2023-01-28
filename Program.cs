@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 string workingDirectory = Environment.CurrentDirectory;
 string projectDirectory = Directory.GetParent(workingDirectory).Parent.Parent.FullName;
-var path = Path.Combine(projectDirectory, "TestDataSet.csv");
+var path = Path.Combine(projectDirectory, "moviereviews.csv");
 
 using (TextFieldParser parser = new TextFieldParser(path))
 {
@@ -25,8 +25,13 @@ using (TextFieldParser parser = new TextFieldParser(path))
     var rowsToKeep = new List<string>();
     var rowsToDelete = new List<string>();
 
+    int loop = 1;
+
     while (!parser.EndOfData)
     {
+        if ((loop % 10000) == 0) { Console.WriteLine("Running... \n"); }
+        loop++;
+
         //Process row or tuple
         string currentRow = parser.PeekChars(IMDBCharLimit);
         string[] fields = parser.ReadFields();
@@ -75,18 +80,27 @@ using (TextFieldParser parser = new TextFieldParser(path))
                         break;
                     case 5:
                         // User's Rating out of 10
-                        results = validator.checkNum(value, "User Rating Error", true);
-                        badTuple = results.Item1;
-                        tupleError = results.Item2;
+                        if (value == "Was this review helpful?  Sign in to vote.")
+                        {
+                            // Console.WriteLine(value);
+                            badTuple = true;
+                            tupleError = "Usefulness Vote Error. Value was 'Was this review helpful? Sign in to vote.'";
+                        }
+                        else {
+                            results = validator.checkNum(value, "Usefulness Vote Error");
+                            badTuple = results.Item1;
+                            tupleError = results.Item2;
+                            // if (badTuple) { Console.WriteLine(value); }
+                        }
                         break;
                     /*
                     case 6:
                         // Review Title
-                        // dont need to validate review right now
+                        // dont need to validate review title right now
                         break;
                     case 7:
                         // Review
-                        // dont need to validate user name right now
+                        // dont need to validate review content right now
                         break;
                     */
                     default: break;
@@ -105,10 +119,15 @@ using (TextFieldParser parser = new TextFieldParser(path))
         }
     }
     File.WriteAllLines(Path.Combine(projectDirectory, "CleanedData.csv"), rowsToKeep);
+    File.WriteAllLines(Path.Combine(projectDirectory, "BadData.csv"), rowsToDelete);
 
-    Console.WriteLine("Deleted Rows: \n");
+    Console.WriteLine("Deleted Rows: \n" + rowsToDelete.Capacity);
+    Console.WriteLine("Good data stored in CleanedData.csv. Deleted data stored in BadData.csv");
+
+    /*
     foreach (var row in rowsToDelete)
     {
         Console.WriteLine(row + "\n");
     }
+    */
 }
