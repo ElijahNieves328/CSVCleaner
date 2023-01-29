@@ -50,8 +50,14 @@ using (TextFieldParser parser = new TextFieldParser(path))
             else if (i >= 6 && !headerRow)
             {
                 //value = value.Replace("\n", "").Replace("\r", "");
-                string quotation = "\"";
-                currentRow += "," + quotation + value.ToString() + quotation;
+                if (value.Contains(",") | value.Contains("\"") | i == 7)
+                {
+                    if (value.Contains("\"")) { value = value.Replace("\"", "\"\""); }
+                    string quotation = "\"";
+                    currentRow += "," + quotation + value.ToString() + quotation;
+                }
+                //else if (value.Contains("\"")) { currentRow += value.Replace("\"", "\"\""); }
+                else { currentRow += "," + value; }
             }
             else
             { currentRow += "," + value; }
