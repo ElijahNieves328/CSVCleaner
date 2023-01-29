@@ -8,12 +8,13 @@ string workingDirectory = Environment.CurrentDirectory;
 string projectDirectory = Directory.GetParent(workingDirectory).Parent.Parent.FullName;
 var path = Path.Combine(projectDirectory, "moviereviews.csv");
 
+
 using (TextFieldParser parser = new TextFieldParser(path))
 {
     parser.TextFieldType = FieldType.Delimited;
     parser.SetDelimiters(",");
 
-    int IMDBCharLimit = 10000;
+    //int IMDBCharLimit = 10000;
     bool headerRow = true;
     bool badTuple = false;
     string tupleError = "";
@@ -33,19 +34,41 @@ using (TextFieldParser parser = new TextFieldParser(path))
         loop++;
 
         //Process row or tuple
-        string currentRow = parser.PeekChars(IMDBCharLimit);
+        //string currentRow = parser.PeekChars(IMDBCharLimit);
+        // To preserve the newline characters in the reviews, we have to reconstruct each row from the array of fields
         string[] fields = parser.ReadFields();
+        string currentRow = "";
+        
+
+        for (int i = 0; i < fields.Length; i++)
+        {
+            string value = fields[i];
+            if (i==0)
+            {
+                currentRow += value;
+            }
+            else if (i >= 6 && !headerRow)
+            {
+                //value = value.Replace("\n", "").Replace("\r", "");
+                string quotation = "\"";
+                currentRow += "," + quotation + value.ToString() + quotation;
+            }
+            else
+            { currentRow += "," + value; }
+        }
 
         badTuple = false;
         tupleError = "";
 
-        if (headerRow == true)
+        if (headerRow)
         {
+            //currentRow = "timestamp," + currentRow;
             rowsToKeep.Add(currentRow);
             headerRow = false;
         }
         else
         {
+            //currentRow = "2023-01-28 09:01:23 " + currentRow;
             for (int i = 0; i < fields.Length; i++)
             {
                 if (badTuple) { break; }
@@ -97,16 +120,16 @@ using (TextFieldParser parser = new TextFieldParser(path))
                             // if (badTuple) { Console.WriteLine(value); }
                         }
                         break;
-                    /*
                     case 6:
                         // Review Title
-                        // dont need to validate review title right now
+                        //Console.WriteLine(value);
                         break;
                     case 7:
                         // Review
                         // dont need to validate review content right now
+                        //Console.WriteLine(value);
                         break;
-                    */
+
                     default: break;
                 }
             }
