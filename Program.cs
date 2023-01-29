@@ -40,8 +40,10 @@ using (TextFieldParser parser = new TextFieldParser(path))
         tupleError = "";
 
         if (headerRow == true)
+        {
             rowsToKeep.Add(currentRow);
             headerRow = false;
+        }
         else
         {
             for (int i = 0; i < fields.Length; i++)
@@ -87,7 +89,8 @@ using (TextFieldParser parser = new TextFieldParser(path))
                             badTuple = true;
                             tupleError = "Usefulness Vote Error. Value was 'Was this review helpful? Sign in to vote.'";
                         }
-                        else {
+                        else
+                        {
                             results = validator.checkNum(value, "Usefulness Vote Error");
                             badTuple = results.Item1;
                             tupleError = results.Item2;
